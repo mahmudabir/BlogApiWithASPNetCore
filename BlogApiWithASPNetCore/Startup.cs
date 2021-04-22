@@ -51,7 +51,10 @@ namespace BlogApiWithASPNetCore
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BlogApiWithASPNetCore v1"));
             }
 
+            // Create Database if not exists
             db.Database.EnsureCreated();
+
+            // Auto Migrate available tables
             db.Database.Migrate();
 
             app.UseHttpsRedirection();

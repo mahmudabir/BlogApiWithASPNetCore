@@ -18,5 +18,16 @@ namespace BlogApiWithASPNetCore.Models
         DbSet<User> Users { get; set; }
         DbSet<Post> Posts { get; set; }
         DbSet<Comment> Comments { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(b => b.User)
+                .WithMany(a => a.Comments)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+        }
     }
 }
