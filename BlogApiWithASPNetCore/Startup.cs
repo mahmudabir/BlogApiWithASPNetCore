@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using BlogApiWithASPNetCore.DataAccess;
 using BlogApiWithASPNetCore.DataAccess.Repositories;
 using BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories;
+using BlogApiWithASPNetCore.Handlers;
 using BlogApiWithASPNetCore.Models;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -43,7 +45,12 @@ namespace BlogApiWithASPNetCore
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BlogApiWithASPNetCore", Version = "v1" });
             });
 
+            // all models for DI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // authentication for the app
+            services.AddAuthentication("BasicAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,6 +72,9 @@ namespace BlogApiWithASPNetCore
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // enable authentication
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
