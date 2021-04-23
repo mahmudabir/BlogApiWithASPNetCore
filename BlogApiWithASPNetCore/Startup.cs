@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using BlogApiWithASPNetCore.DataAccess;
+using BlogApiWithASPNetCore.DataAccess.Repositories;
+using BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories;
 using BlogApiWithASPNetCore.Models;
 
 using Microsoft.AspNetCore.Builder;
@@ -39,6 +42,8 @@ namespace BlogApiWithASPNetCore
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BlogApiWithASPNetCore", Version = "v1" });
             });
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

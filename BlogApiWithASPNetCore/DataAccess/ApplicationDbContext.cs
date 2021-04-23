@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
+using BlogApiWithASPNetCore.Models;
+
 using Microsoft.EntityFrameworkCore;
 
-namespace BlogApiWithASPNetCore.Models
+namespace BlogApiWithASPNetCore.DataAccess
 {
     public class ApplicationDbContext : DbContext
     {
@@ -15,9 +16,9 @@ namespace BlogApiWithASPNetCore.Models
 
         }
 
-        DbSet<User> Users { get; set; }
-        DbSet<Post> Posts { get; set; }
-        DbSet<Comment> Comments { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
