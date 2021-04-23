@@ -16,6 +16,11 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             _db = db;
         }
 
+        public User GetUserByUsernameNPassword(string username, string password)
+        {
+            return _db.Users.Where(u => u.Username == username && u.Password == password).FirstOrDefault();
+        }
+
         public void Update(User user)
         {
             var objFromDb = _db.Users.FirstOrDefault(u => u.Id == user.Id);

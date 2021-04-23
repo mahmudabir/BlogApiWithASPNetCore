@@ -10,5 +10,6 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories
     public interface IUserRepository : IRepository<User>
     {
         void Update(User user);
+        public User GetUserByUsernameNPassword(string username, string password);
     }
 }
