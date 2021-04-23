@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 
 namespace BlogApiWithASPNetCore.Models
 {
-    public class Comment : IValidatableObject
+    public class Comment
     {
+        [Key]
         public int Id { get; set; }
+        [Required]
         public string Content { get; set; }
         public DateTime CommentTime { get; set; }
 
@@ -20,10 +22,5 @@ namespace BlogApiWithASPNetCore.Models
         [ForeignKey("Post")]
         public int PostId { get; set; }
         public Post Post { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
