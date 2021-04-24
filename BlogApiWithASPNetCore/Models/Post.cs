@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BlogApiWithASPNetCore.Models
@@ -21,6 +22,7 @@ namespace BlogApiWithASPNetCore.Models
         public int UserId { get; set; }
         public User User { get; set; }
 
+        [JsonIgnore]
         public ICollection<Comment> Comments { get; set; }
     }
 }
