@@ -27,7 +27,7 @@ namespace BlogApiWithASPNetCore.Controllers
             _db = db;
         }
 
-        [Authorize]
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("{id}")]
         public IActionResult GetUserById(int id)
         {
@@ -89,7 +89,11 @@ namespace BlogApiWithASPNetCore.Controllers
         [HttpGet("logout")]
         public IActionResult GetLogout()
         {
-            var value = HttpContext.User.Identity.Name;
+            var username = HttpContext.User.Identity.Name;
+            var isAdmin = HttpContext.User.IsInRole("Admin");
+            var isAuthenticated = HttpContext.User.Identity.IsAuthenticated;
+            var authenticationType = HttpContext.User.Identity.AuthenticationType;
+            var claims = HttpContext.User.Claims;
 
             return Ok();
         }

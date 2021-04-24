@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -60,7 +61,7 @@ namespace BlogApiWithASPNetCore.Handlers
                     {
                         var claims = new[] { new Claim(ClaimTypes.Name, userFromDb.Username) };
                         var identity = new ClaimsIdentity(claims, Scheme.Name);
-                        var principal = new ClaimsPrincipal(identity);
+                        var principal = new GenericPrincipal(identity, userFromDb.Role.Split(new char[] { ',' }));
                         var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
                         return AuthenticateResult.Success(ticket);
