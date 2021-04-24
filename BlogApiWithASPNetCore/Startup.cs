@@ -51,6 +51,12 @@ namespace BlogApiWithASPNetCore
             // authentication for the app
             services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
+            // Json format indent enabled
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.WriteIndented = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,6 +78,15 @@ namespace BlogApiWithASPNetCore
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // Shows UseCors with CorsPolicyBuilder.
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("*")
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
 
             // enable authentication
             app.UseAuthentication();
