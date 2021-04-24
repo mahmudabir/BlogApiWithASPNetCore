@@ -20,9 +20,9 @@ namespace BlogApiWithASPNetCore.Models
 
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public User User { get; set; }
+        internal User User { get; set; }
 
         [JsonIgnore]
-        public ICollection<Comment> Comments { get; set; }
+        internal ICollection<Comment> Comments { get; set; }
     }
 }

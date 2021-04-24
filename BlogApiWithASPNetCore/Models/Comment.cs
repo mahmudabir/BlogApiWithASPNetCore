@@ -17,10 +17,10 @@ namespace BlogApiWithASPNetCore.Models
 
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public User User { get; set; }
+        internal User User { get; set; }
 
         [ForeignKey("Post")]
         public int PostId { get; set; }
-        public Post Post { get; set; }
+        internal Post Post { get; set; }
     }
 }

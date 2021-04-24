@@ -20,8 +20,8 @@ namespace BlogApiWithASPNetCore.Models
         public string Password { get; set; }
 
         [JsonIgnore]
-        public ICollection<Post> Posts { get; set; }
+        internal ICollection<Post> Posts { get; set; }
         [JsonIgnore]
-        public ICollection<Comment> Comments { get; set; }
+        internal ICollection<Comment> Comments { get; set; }
     }
 }
