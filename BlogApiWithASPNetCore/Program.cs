@@ -22,7 +22,7 @@ namespace BlogApiWithASPNetCore
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://localhost");
+                    webBuilder.UseUrls("https://0.0.0.0:5000");
                     //webBuilder.UseUrls("https://localhost", "https://0.0.0.0");
                 });
     }
