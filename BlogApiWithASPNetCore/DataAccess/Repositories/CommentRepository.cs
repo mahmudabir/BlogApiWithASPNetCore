@@ -35,6 +35,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             if (objFromDb != null)
             {
                 objFromDb.Content = comment.Content;
+                _db.SaveChanges();
             }
         }
     }

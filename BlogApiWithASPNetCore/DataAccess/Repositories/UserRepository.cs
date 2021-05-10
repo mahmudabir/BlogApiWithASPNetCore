@@ -27,6 +27,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             if (objFromDb != null)
             {
                 objFromDb.Password = user.Password;
+                _db.SaveChanges();
             }
         }
     }

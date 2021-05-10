@@ -34,6 +34,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             {
                 objFromDb.Title = post.Title;
                 objFromDb.Content = post.Content;
+                _db.SaveChanges();
             }
         }
     }

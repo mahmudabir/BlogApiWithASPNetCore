@@ -23,6 +23,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
         public void Delete(int id)
         {
             this.dbSet.Remove(Get(id));
+            _db.SaveChanges();
         }
 
         public T Get(int id)
@@ -38,6 +39,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
         public void Insert(T entity)
         {
             this.dbSet.Add(entity);
+            _db.SaveChanges();
         }
     }
 }
