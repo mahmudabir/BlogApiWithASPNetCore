@@ -61,7 +61,10 @@ namespace BlogApiWithASPNetCore.Handlers
                     {
                         var claims = new[] { new Claim(ClaimTypes.Name, userFromDb.Username) };
                         var identity = new ClaimsIdentity(claims, Scheme.Name);
-                        var principal = new GenericPrincipal(identity, userFromDb.Role.Split(new char[] { ',' }));
+
+                        var roles = _db.User.GetUserByUsername(username).Role.Split(new char[] { ',' });
+                        var principal = new GenericPrincipal(identity, roles);
+
                         var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
                         return AuthenticateResult.Success(ticket);

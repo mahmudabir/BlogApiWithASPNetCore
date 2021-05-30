@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using BlogApiWithASPNetCore.DataAccess.Repositories;
 using BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories;
 using BlogApiWithASPNetCore.Models;
+using BlogApiWithASPNetCore.Models.ViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -41,11 +42,11 @@ namespace BlogApiWithASPNetCore.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult PutUser(User user)
+        public IActionResult PutUser(int id, UserViewModel user)
         {
             if (ModelState.IsValid)
             {
-                var userFromDb = _db.User.Get(user.Id);
+                var userFromDb = _db.User.Get(id);
                 if (userFromDb != null)
                 {
                     _db.User.Update(user);
@@ -65,11 +66,11 @@ namespace BlogApiWithASPNetCore.Controllers
 
         [Authorize]
         [HttpPost("login")]
-        public IActionResult PostLogin(User user)
+        public IActionResult PostLogin(UserViewModel user)
         {
             if (ModelState.IsValid)
             {
-                User userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
+                var userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
                 if (userFromDB != null)
                 {
                     return Ok(userFromDB);
@@ -99,11 +100,11 @@ namespace BlogApiWithASPNetCore.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult PostRegister(User user)
+        public IActionResult PostRegister(UserViewModel user)
         {
             if (ModelState.IsValid)
             {
-                User userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
+                var userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
                 if (userFromDB != null)
                 {
                     return BadRequest("Username already exists");

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories;
 using BlogApiWithASPNetCore.Models;
+using BlogApiWithASPNetCore.Models.ViewModels;
 
 namespace BlogApiWithASPNetCore.DataAccess.Repositories
 {
@@ -16,17 +17,52 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             _db = db;
         }
 
-        public User GetUserByUsernameNPassword(string username, string password)
+        public UserViewModel GetUserByUsernameNPassword(string username, string password)
         {
-            return _db.Users.Where(u => u.Username == username && u.Password == password).FirstOrDefault();
+            UserViewModel user = new();
+            var usernameFromDb = _db.Users.Where(u => u.Username == username).FirstOrDefault();
+            var passwordFromDb = _db.Credentials.Where(u => u.Password == password).FirstOrDefault();
+            if (usernameFromDb != null && passwordFromDb != null)
+            {
+                user.Username = usernameFromDb.Username;
+                user.Password = passwordFromDb.Password;
+                return user;
+            }
+            return null;
         }
 
-        public void Update(User user)
+        public User GetUserByUsername(string username)
         {
-            var objFromDb = _db.Users.FirstOrDefault(u => u.Id == user.Id);
-            if (objFromDb != null)
+            var usernameFromDb = _db.Users.Where(u => u.Username == username).FirstOrDefault();
+            if (usernameFromDb != null)
             {
-                objFromDb.Password = user.Password;
+                return usernameFromDb;
+            }
+            return null;
+        }
+
+        public void Update(UserViewModel user)
+        {
+            var userFromDb = _db.Users.FirstOrDefault(u => u.Username == user.Username);
+            if (userFromDb != null)
+            {
+                var credentialFromDb = _db.Credentials.FirstOrDefault(c => c.Id == userFromDb.Id);
+                if (credentialFromDb != null)
+                {
+                    credentialFromDb.Password = user.Password;
+                    _db.SaveChanges();
+                }
+            }
+        }
+
+        public void Insert(UserViewModel user)
+        {
+            var userFromDb = _db.Users.FirstOrDefault(u => u.Username == user.Username);
+            if (userFromDb == null)
+            {
+                var addedUserInDb = _db.Users.Add(new User() { Username = user.Username });
+                _db.SaveChanges();
+                _db.Credentials.Add(new Credential() { Password = user.Password, UserId = addedUserInDb.Entity.Id });
                 _db.SaveChanges();
             }
         }
