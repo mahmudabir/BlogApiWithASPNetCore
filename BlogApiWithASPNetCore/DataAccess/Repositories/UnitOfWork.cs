@@ -17,11 +17,13 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             User = new UserRepository(_db);
             Post = new PostRepository(_db);
             Comment = new CommentRepository(_db);
+            Credential = new CredentialRepository(_db);
         }
 
         public IUserRepository User { get; set; }
         public IPostRepository Post { get; set; }
         public ICommentRepository Comment { get; set; }
+        public ICredentialRepository Credential { get; set; }
 
         public void Dispose()
         {

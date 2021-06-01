@@ -10,6 +10,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories
         IUserRepository User { get; set; }
         IPostRepository Post { get; set; }
         ICommentRepository Comment { get; set; }
+        ICredentialRepository Credential { get; set; }
 
         public void Save();
     }
