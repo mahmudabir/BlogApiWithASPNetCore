@@ -12,10 +12,12 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
     public class PostRepository : Repository<Post>, IPostRepository
     {
         private readonly ApplicationDbContext _db;
+        private readonly UnitOfWork _uow;
 
-        public PostRepository(ApplicationDbContext db) : base(db)
+        public PostRepository(ApplicationDbContext db, UnitOfWork uow) : base(db)
         {
             _db = db;
+            _uow = uow;
         }
 
         public List<Post> PostSearch(string search)

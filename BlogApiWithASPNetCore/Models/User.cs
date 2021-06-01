@@ -18,8 +18,10 @@ namespace BlogApiWithASPNetCore.Models
         [Required]
         public string Username { get; set; }
 
-        [NotMapped]
-        public string Role => "Admin,User";
+        [ForeignKey("Role")]
+        public int RoleId { get; set; }
+        //[JsonIgnore]
+        public Role Role { get; set; }
 
         [JsonIgnore]
         internal ICollection<Post> Posts { get; set; }

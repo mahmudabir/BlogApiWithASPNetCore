@@ -11,9 +11,11 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
     public class CredentialRepository : Repository<Credential>, ICredentialRepository
     {
         private readonly ApplicationDbContext _db;
-        public CredentialRepository(ApplicationDbContext db) : base(db)
+        private readonly IUnitOfWork _uow;
+        public CredentialRepository(ApplicationDbContext db, IUnitOfWork uow) : base(db)
         {
             _db = db;
+            _uow = uow;
         }
 
         public void Update(Credential credential)

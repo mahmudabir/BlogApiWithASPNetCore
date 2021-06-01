@@ -28,6 +28,32 @@ namespace BlogApiWithASPNetCore.Controllers
             _db = db;
         }
 
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("")]
+        public IActionResult GetAllUsers()
+        {
+            var usersFormDb = _db.User.GetAll();
+            if (usersFormDb != null)
+            {
+                return Ok(usersFormDb);
+            }
+            return NoContent();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("roles/{designation}")]
+        public IActionResult GetAllUsersByDesignation(string designation)
+        {
+            var usersFormDb = _db.User.GetAllUsersByDesignation(designation);
+            if (usersFormDb.Count != 0)
+            {
+                return Ok(usersFormDb);
+            }
+            return NoContent();
+        }
+
+
         [Authorize(Roles = "User,Admin")]
         [HttpGet("{id}")]
         public IActionResult GetUserById(int id)
@@ -99,8 +125,8 @@ namespace BlogApiWithASPNetCore.Controllers
             return Ok();
         }
 
-        [HttpPost("register")]
-        public IActionResult PostRegister(UserViewModel user)
+        [HttpPost("register/{type}")]
+        public IActionResult PostUserRegister(UserViewModel user, string type)
         {
             if (ModelState.IsValid)
             {
@@ -111,7 +137,7 @@ namespace BlogApiWithASPNetCore.Controllers
                 }
                 else
                 {
-                    _db.User.Insert(user);
+                    _db.User.Insert(user, type);
                     _db.Save();
                     return StatusCode(201);
                 }

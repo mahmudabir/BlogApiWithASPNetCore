@@ -18,6 +18,7 @@ namespace BlogApiWithASPNetCore.DataAccess
 
         public DbSet<User> Users { get; set; }
         public DbSet<Credential> Credentials { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
 

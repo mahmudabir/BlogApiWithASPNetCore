@@ -8,9 +8,11 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
+using BlogApiWithASPNetCore.DataAccess;
 using BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories;
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,15 +21,18 @@ namespace BlogApiWithASPNetCore.Handlers
     public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IUnitOfWork _db;
+        private readonly ApplicationDbContext _context;
         public BasicAuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            IUnitOfWork db)
+            IUnitOfWork db,
+            ApplicationDbContext context)
             : base(options, logger, encoder, clock)
         {
             _db = db;
+            _context = context;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -62,8 +67,11 @@ namespace BlogApiWithASPNetCore.Handlers
                         var claims = new[] { new Claim(ClaimTypes.Name, userFromDb.Username) };
                         var identity = new ClaimsIdentity(claims, Scheme.Name);
 
-                        var roles = _db.User.GetUserByUsername(username).Role.Split(new char[] { ',' });
-                        var principal = new GenericPrincipal(identity, roles);
+                       var includedUser = _context.Users.Include(u=>u.Role);
+                        var users = includedUser.ToList();
+                        var roles = users.FirstOrDefault().Role.Designation;
+                        //var roles = _db.User.GetUserByUsername(username).Role.Split(new char[] { ',' });
+                        var principal = new GenericPrincipal(identity, new string[] { roles });
 
                         var ticket = new AuthenticationTicket(principal, Scheme.Name);
 

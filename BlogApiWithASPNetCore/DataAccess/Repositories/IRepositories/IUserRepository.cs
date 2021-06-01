@@ -11,8 +11,9 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories
     public interface IUserRepository : IRepository<User>
     {
         void Update(UserViewModel user);
-        void Insert(UserViewModel user);
+        void Insert(UserViewModel user, string type);
         public UserViewModel GetUserByUsernameNPassword(string username, string password);
         public User GetUserByUsername(string username);
+        public List<User> GetAllUsersByDesignation(string designation);
     }
 }

@@ -11,6 +11,7 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories
         IPostRepository Post { get; set; }
         ICommentRepository Comment { get; set; }
         ICredentialRepository Credential { get; set; }
+        IRoleRepository Role { get; set; }
 
         public void Save();
     }

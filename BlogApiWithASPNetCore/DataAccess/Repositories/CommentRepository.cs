@@ -13,10 +13,12 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
     public class CommentRepository : Repository<Comment>, ICommentRepository
     {
         private readonly ApplicationDbContext _db;
+        private readonly UnitOfWork _uow;
 
-        public CommentRepository(ApplicationDbContext db) : base(db)
+        public CommentRepository(ApplicationDbContext db, UnitOfWork uow) : base(db)
         {
             _db = db;
+            _uow = uow;
         }
 
         public List<Comment> GetAllCommentsByPost(int pid)

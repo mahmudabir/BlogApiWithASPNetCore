@@ -12,9 +12,11 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
     public class UserRepository : Repository<User>, IUserRepository
     {
         private readonly ApplicationDbContext _db;
-        public UserRepository(ApplicationDbContext db) : base(db)
+        private readonly IUnitOfWork _uow;
+        public UserRepository(ApplicationDbContext db, IUnitOfWork uow) : base(db)
         {
             _db = db;
+            _uow = uow;
         }
 
         public UserViewModel GetUserByUsernameNPassword(string username, string password)
@@ -55,16 +57,24 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             }
         }
 
-        public void Insert(UserViewModel user)
+        public void Insert(UserViewModel user, string type)
         {
+            var roleId = _db.Roles.Where(r => r.Designation.Equals(type)).FirstOrDefault().Id;
             var userFromDb = _db.Users.FirstOrDefault(u => u.Username == user.Username);
             if (userFromDb == null)
             {
-                var addedUserInDb = _db.Users.Add(new User() { Username = user.Username });
+                var addedUserInDb = _db.Users.Add(new User() { Username = user.Username, RoleId = roleId });
                 _db.SaveChanges();
                 _db.Credentials.Add(new Credential() { Password = user.Password, UserId = addedUserInDb.Entity.Id });
                 _db.SaveChanges();
             }
+        }
+
+        public List<User> GetAllUsersByDesignation(string designation)
+        {
+            var roleIdFromDb = _uow.Role.GetAll().Where(r => r.Designation.ToUpper() == designation.ToUpper())?.FirstOrDefault()?.Id;
+            var usersFormDb = _uow.User.GetAll().Where(u => u.RoleId == roleIdFromDb).ToList();
+            return usersFormDb;
         }
     }
 }
