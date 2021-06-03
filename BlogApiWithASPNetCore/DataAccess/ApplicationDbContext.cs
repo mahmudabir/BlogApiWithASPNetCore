@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿
 using BlogApiWithASPNetCore.Models;
 
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +26,12 @@ namespace BlogApiWithASPNetCore.DataAccess
                 .HasOne(b => b.User)
                 .WithMany(a => a.Comments)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(b => b.Post)
+                .WithMany(a => a.Comments)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }
