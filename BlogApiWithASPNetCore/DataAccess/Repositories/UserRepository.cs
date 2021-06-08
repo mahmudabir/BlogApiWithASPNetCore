@@ -76,5 +76,12 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories
             var usersFormDb = _uow.User.GetAll().Where(u => u.RoleId == roleIdFromDb).ToList();
             return usersFormDb;
         }
+
+        public void SetUserProfilePicture(string username, string path)
+        {
+            var user = this.GetUserByUsername(username);
+            user.ImagePath = path;
+            _db.SaveChanges();
+        }
     }
 }

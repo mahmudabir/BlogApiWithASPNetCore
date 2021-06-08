@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,9 +15,9 @@ using BlogApiWithASPNetCore.Models;
 using BlogApiWithASPNetCore.Models.ViewModels;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
 namespace BlogApiWithASPNetCore.Controllers
 {
     [ApiController]
@@ -22,10 +25,11 @@ namespace BlogApiWithASPNetCore.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUnitOfWork _db;
-
-        public UsersController(IUnitOfWork db)
+        public readonly IWebHostEnvironment _environment;
+        public UsersController(IUnitOfWork db, IWebHostEnvironment environment)
         {
             _db = db;
+            _environment = environment;
         }
 
 
@@ -146,6 +150,141 @@ namespace BlogApiWithASPNetCore.Controllers
             {
                 return BadRequest(ModelState);
             }
+        }
+
+        [HttpPost("upload")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+        {
+            //string path = Path.Combine(_environment.ContentRootPath, "Images/" + file.FileName);
+            //using (var stream = new FileStream(path, FileMode.Create))
+            //{
+            //    await file.CopyToAsync(stream);
+            //}
+            //return Ok(file.FileName);
+
+            if (file.Length > 0)
+            {
+                try
+                {
+                    if (!Directory.Exists(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\"))
+                    {
+                        Directory.CreateDirectory(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\");
+                    }
+                    // var fileName= Path.GetFileName(file.FileName);
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    Console.WriteLine(fileExtension);
+                    if (!CheckFileIfImageType(fileExtension))
+                    {
+                        return BadRequest("The File should be of jpg, jpeg, png type");
+                    }
+                    using (FileStream filestream = System.IO.File.Create(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension))
+                    {
+                        await file.CopyToAsync(filestream);
+                        await filestream.FlushAsync();
+
+                        var userFromDb = _db.User.GetUserByUsername(HttpContext.User.Identity.Name);
+
+                        _db.User.SetUserProfilePicture(HttpContext.User.Identity.Name, "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension);
+
+
+                        //try
+                        //{
+                        //    string filePath = _environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension;
+                        //    byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+                        //    return Ok(fileBytes);
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    return BadRequest(ex.ToString());
+                        //}
+
+
+
+
+
+                        return Ok("\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.ToString());
+                }
+            }
+            else
+            {
+                return BadRequest("Unsuccessful");
+            }
+        }
+
+
+        [HttpGet("download/{username}")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> DownloadFile(string username)
+        {
+            try
+            {
+                var userFromDb = _db.User.GetUserByUsername(username);
+                //string filePath = _environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + ".jpg";
+                string filePath = _environment.ContentRootPath + userFromDb.ImagePath;
+                //byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                //string fileName = HttpContext.User.Identity.Name + "_Profile_Picture" + ".jpg";
+                var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return new FileStreamResult(stream, "image/jpeg");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
+
+        [HttpDelete("delete/{username}")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> DeleteFile(string username)
+        {
+            try
+            {
+                var userFromDb = _db.User.GetUserByUsername(username);
+
+                if (System.IO.File.Exists(_environment.ContentRootPath + userFromDb.ImagePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(_environment.ContentRootPath + userFromDb.ImagePath);
+                        _db.User.SetUserProfilePicture(username, null);
+                        return Ok("Deleted");
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(ex.ToString());
+                    }
+
+                }
+                return BadRequest("File does not exist");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
+        }
+
+        // Non Action Methods
+        [NonAction]
+        private bool CheckFileIfImageType(string fileExtension)
+        {
+            string[] types = { ".jpg", ".jpeg", ".png" };
+
+            bool flag = false;
+            foreach (var item in types)
+            {
+                if (fileExtension.ToLower() == item)
+                {
+                    flag = true;
+                    break;
+                }
+            }
+            return flag;
         }
     }
 }

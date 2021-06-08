@@ -17,6 +17,7 @@ namespace BlogApiWithASPNetCore.Models
         public int Id { get; set; }
         [Required]
         public string Username { get; set; }
+        public string ImagePath { get; set; }
 
         [ForeignKey("Role")]
         public int RoleId { get; set; }

@@ -102,10 +102,10 @@ namespace BlogApiWithASPNetCore
             }
 
             // Create Database if not exists
-            db.Database.EnsureCreated();
+            //db.Database.EnsureCreated();
 
             // Auto Migrate available tables
-            db.Database.Migrate();
+            //db.Database.Migrate();
 
             app.UseHttpsRedirection();
 

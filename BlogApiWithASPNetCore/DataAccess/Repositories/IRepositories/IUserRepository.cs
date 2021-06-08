@@ -15,5 +15,6 @@ namespace BlogApiWithASPNetCore.DataAccess.Repositories.IRepositories
         public UserViewModel GetUserByUsernameNPassword(string username, string password);
         public User GetUserByUsername(string username);
         public List<User> GetAllUsersByDesignation(string designation);
+        public void SetUserProfilePicture(string username, string path);
     }
 }
