@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Uploads\Static_Pictures\" />
     <Folder Include="Uploads\Profile_Pictures\" />
   </ItemGroup>
 

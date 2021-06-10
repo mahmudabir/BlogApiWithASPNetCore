@@ -59,10 +59,22 @@ namespace BlogApiWithASPNetCore.Controllers
 
 
         [Authorize(Roles = "User,Admin")]
-        [HttpGet("{id}")]
+        [HttpGet("id/{id}")]
         public IActionResult GetUserById(int id)
         {
             var userFormDb = _db.User.Get(id);
+            if (userFormDb != null)
+            {
+                return Ok(userFormDb);
+            }
+            return NoContent();
+        }
+
+        [Authorize(Roles = "User,Admin")]
+        [HttpGet("username/{username}")]
+        public IActionResult GetUserByUsername(string username)
+        {
+            var userFormDb = _db.User.GetUserByUsername(username);
             if (userFormDb != null)
             {
                 return Ok(userFormDb);
@@ -129,8 +141,8 @@ namespace BlogApiWithASPNetCore.Controllers
             return Ok();
         }
 
-        [HttpPost("register/{type}")]
-        public IActionResult PostUserRegister(UserViewModel user, string type)
+        [HttpPost("register/user")]
+        public async Task<IActionResult> PostUserRegister([FromForm] UserViewModel user, [FromRoute] string type)
         {
             if (ModelState.IsValid)
             {
@@ -141,9 +153,10 @@ namespace BlogApiWithASPNetCore.Controllers
                 }
                 else
                 {
-                    _db.User.Insert(user, type);
+                    _db.User.Insert(user, "User");
                     _db.Save();
-                    return StatusCode(201);
+                    return Ok(await UploadFile(user.Image, user.Username));
+                    //return StatusCode(201);
                 }
             }
             else
@@ -152,73 +165,43 @@ namespace BlogApiWithASPNetCore.Controllers
             }
         }
 
-        [HttpPost("upload")]
-        [Authorize(Roles = "Admin,User")]
-        public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+        [HttpPost("register/admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PostAdminRegister([FromForm] UserViewModel user, [FromRoute] string type)
         {
-            //string path = Path.Combine(_environment.ContentRootPath, "Images/" + file.FileName);
-            //using (var stream = new FileStream(path, FileMode.Create))
-            //{
-            //    await file.CopyToAsync(stream);
-            //}
-            //return Ok(file.FileName);
-
-            if (file.Length > 0)
+            if (ModelState.IsValid)
             {
-                try
+                var userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
+                if (userFromDB != null)
                 {
-                    if (!Directory.Exists(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\"))
-                    {
-                        Directory.CreateDirectory(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\");
-                    }
-                    // var fileName= Path.GetFileName(file.FileName);
-                    var fileExtension = Path.GetExtension(file.FileName);
-                    Console.WriteLine(fileExtension);
-                    if (!CheckFileIfImageType(fileExtension))
-                    {
-                        return BadRequest("The File should be of jpg, jpeg, png type");
-                    }
-                    using (FileStream filestream = System.IO.File.Create(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension))
-                    {
-                        await file.CopyToAsync(filestream);
-                        await filestream.FlushAsync();
-
-                        var userFromDb = _db.User.GetUserByUsername(HttpContext.User.Identity.Name);
-
-                        _db.User.SetUserProfilePicture(HttpContext.User.Identity.Name, "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension);
-
-
-                        //try
-                        //{
-                        //    string filePath = _environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension;
-                        //    byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
-                        //    return Ok(fileBytes);
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    return BadRequest(ex.ToString());
-                        //}
-
-
-
-
-
-                        return Ok("\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension);
-                    }
+                    return BadRequest("Username already exists");
                 }
-                catch (Exception ex)
+                else
                 {
-                    return BadRequest(ex.ToString());
+                    _db.User.Insert(user, "Admin");
+                    _db.Save();
+                    return Ok(await UploadFile(user.Image, user.Username));
+                    //return StatusCode(201);
                 }
             }
             else
             {
-                return BadRequest("Unsuccessful");
+                return BadRequest(ModelState);
             }
         }
 
+        [HttpPost("change-profile-Picture")]
+        [Authorize(Roles = "Admin,User")]
+        public async Task<IActionResult> ChangeProfilePiction(IFormFile Image)
+        {
+            if (Image != null)
+            {
+                return Ok(await UploadFile(Image, HttpContext.User.Identity.Name));
+            }
+            return BadRequest("Please select a picture");
+        }
 
-        [HttpGet("download/{username}")]
+        [HttpGet("download-profile-Picture")]
         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> DownloadFile(string username)
         {
@@ -285,6 +268,71 @@ namespace BlogApiWithASPNetCore.Controllers
                 }
             }
             return flag;
+        }
+
+
+        [NonAction]
+        public async Task<IActionResult> UploadFile(IFormFile Image, string username)
+        {
+            //string path = Path.Combine(_environment.ContentRootPath, "Images/" + file.FileName);
+            //using (var stream = new FileStream(path, FileMode.Create))
+            //{
+            //    await file.CopyToAsync(stream);
+            //}
+            //return Ok(file.FileName);
+
+            if (Image.Length > 0)
+            {
+                try
+                {
+                    if (!Directory.Exists(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\"))
+                    {
+                        Directory.CreateDirectory(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\");
+                    }
+                    // var fileName= Path.GetFileName(file.FileName);
+                    var fileExtension = Path.GetExtension(Image.FileName);
+                    Console.WriteLine(fileExtension);
+                    if (!CheckFileIfImageType(fileExtension))
+                    {
+                        return BadRequest("The File should be of jpg, jpeg, png type");
+                    }
+                    using (FileStream filestream = System.IO.File.Create(_environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + username + "_Profile_Picture" + fileExtension))
+                    {
+                        await Image.CopyToAsync(filestream);
+                        await filestream.FlushAsync();
+
+                        var userFromDb = _db.User.GetUserByUsername("test1");
+
+                        _db.User.SetUserProfilePicture("test1", "\\Uploads\\Profile_Pictures\\" + username + "_Profile_Picture" + fileExtension);
+
+
+                        //try
+                        //{
+                        //    string filePath = _environment.ContentRootPath + "\\Uploads\\Profile_Pictures\\" + HttpContext.User.Identity.Name + "_Profile_Picture" + fileExtension;
+                        //    byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+                        //    return Ok(fileBytes);
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    return BadRequest(ex.ToString());
+                        //}
+
+
+
+
+
+                        return Ok("\\Uploads\\Profile_Pictures\\" + "test1" + "_Profile_Picture" + fileExtension);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.ToString());
+                }
+            }
+            else
+            {
+                return BadRequest("Unsuccessful");
+            }
         }
     }
 }
