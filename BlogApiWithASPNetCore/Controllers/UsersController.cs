@@ -26,10 +26,12 @@ namespace BlogApiWithASPNetCore.Controllers
     {
         private readonly IUnitOfWork _db;
         public readonly IWebHostEnvironment _environment;
-        public UsersController(IUnitOfWork db, IWebHostEnvironment environment)
+        IHttpContextAccessor _httpContextAccessor;
+        public UsersController(IUnitOfWork db, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
         {
             _db = db;
             _environment = environment;
+            _httpContextAccessor = httpContextAccessor;
         }
 
 
@@ -72,12 +74,15 @@ namespace BlogApiWithASPNetCore.Controllers
 
         [Authorize(Roles = "User,Admin")]
         [HttpGet("username/{username}")]
-        public IActionResult GetUserByUsername(string username)
+        public async Task<IActionResult> GetUserByUsername(string username)
         {
             var userFormDb = _db.User.GetUserByUsername(username);
+            UserViewModel user = new();
+            user.Username = userFormDb.Username;
+            user.ImageByte = FileToByte(DownloadFile(username));
             if (userFormDb != null)
             {
-                return Ok(userFormDb);
+                return Ok(user);
             }
             return NoContent();
         }
@@ -115,6 +120,17 @@ namespace BlogApiWithASPNetCore.Controllers
                 var userFromDB = _db.User.GetUserByUsernameNPassword(user.Username, user.Password);
                 if (userFromDB != null)
                 {
+                    try
+                    {
+                        _httpContextAccessor.HttpContext.Session.SetString("username", "abir");
+                        _httpContextAccessor.HttpContext.Session.SetString("password", "abir");
+                    }
+                    catch (Exception e)
+                    {
+
+                        Console.WriteLine(e.ToString());
+                    }
+
                     return Ok(userFromDB);
                 }
                 else
@@ -137,6 +153,9 @@ namespace BlogApiWithASPNetCore.Controllers
             var isAuthenticated = HttpContext.User.Identity.IsAuthenticated;
             var authenticationType = HttpContext.User.Identity.AuthenticationType;
             var claims = HttpContext.User.Claims;
+
+            Console.WriteLine(_httpContextAccessor.HttpContext.Session.GetString("username").ToString());
+            Console.WriteLine(_httpContextAccessor.HttpContext.Session.GetString("password").ToString());
 
             return Ok();
         }
@@ -203,7 +222,7 @@ namespace BlogApiWithASPNetCore.Controllers
 
         [HttpGet("download-profile-Picture")]
         [Authorize(Roles = "Admin,User")]
-        public async Task<IActionResult> DownloadFile(string username)
+        public FileStream DownloadFile(string username)
         {
             try
             {
@@ -213,11 +232,13 @@ namespace BlogApiWithASPNetCore.Controllers
                 //byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
                 //string fileName = HttpContext.User.Identity.Name + "_Profile_Picture" + ".jpg";
                 var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return new FileStreamResult(stream, "image/jpeg");
+                return stream;
+                //return new FileStreamResult(stream, "image/jpeg");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.ToString());
+                // return BadRequest(ex.ToString());
+                throw;
             }
         }
 
@@ -303,7 +324,7 @@ namespace BlogApiWithASPNetCore.Controllers
 
                         var userFromDb = _db.User.GetUserByUsername("test1");
 
-                        _db.User.SetUserProfilePicture("test1", "\\Uploads\\Profile_Pictures\\" + username + "_Profile_Picture" + fileExtension);
+                        _db.User.SetUserProfilePicture(username, "\\Uploads\\Profile_Pictures\\" + username + "_Profile_Picture" + fileExtension);
 
 
                         //try
@@ -321,7 +342,7 @@ namespace BlogApiWithASPNetCore.Controllers
 
 
 
-                        return Ok("\\Uploads\\Profile_Pictures\\" + "test1" + "_Profile_Picture" + fileExtension);
+                        return Ok("\\Uploads\\Profile_Pictures\\" + username + "_Profile_Picture" + fileExtension);
                     }
                 }
                 catch (Exception ex)
@@ -333,6 +354,16 @@ namespace BlogApiWithASPNetCore.Controllers
             {
                 return BadRequest("Unsuccessful");
             }
+        }
+
+        byte[] FileToByte(FileStream s)
+        {
+            System.IO.FileStream fs = s;
+            byte[] data = new byte[fs.Length];
+            int br = fs.Read(data, 0, data.Length);
+            if (br != fs.Length)
+                throw new System.IO.IOException("Error");
+            return data;
         }
     }
 }

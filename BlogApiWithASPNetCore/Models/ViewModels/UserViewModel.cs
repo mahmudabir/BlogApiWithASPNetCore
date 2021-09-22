@@ -15,6 +15,7 @@ namespace BlogApiWithASPNetCore.Models.ViewModels
         [Required]
         public string Password { get; set; }
 
+        public byte[] ImageByte { get; set; }
         public IFormFile Image { get; set; }
 
         //[NotMapped]

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +12,7 @@ using BlogApiWithASPNetCore.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,18 @@ namespace BlogApiWithASPNetCore
 
             // all models for DI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // all httpcontext for DI
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromSeconds(100000);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             // authentication for the app
             services.AddAuthentication("BasicAuthentication")
@@ -119,6 +132,9 @@ namespace BlogApiWithASPNetCore
                 .AllowAnyMethod()
                 .AllowAnyHeader();
             });
+
+            //enable session
+            app.UseSession();
 
             // enable authentication
             app.UseAuthentication();
